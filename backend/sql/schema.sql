@@ -1,0 +1,144 @@
+CREATE DATABASE IF NOT EXISTS monlivres CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE monlivres;
+
+DROP TABLE IF EXISTS payments;
+DROP TABLE IF EXISTS commentaires;
+DROP TABLE IF EXISTS avis;
+DROP TABLE IF EXISTS liste_items;
+DROP TABLE IF EXISTS listes_cadeaux;
+DROP TABLE IF EXISTS commande_items;
+DROP TABLE IF EXISTS commandes;
+DROP TABLE IF EXISTS panier_items;
+DROP TABLE IF EXISTS panier;
+DROP TABLE IF EXISTS ouvrages;
+DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS users;
+
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nom VARCHAR(100),
+  email VARCHAR(100) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  role ENUM('client','editeur','gestionnaire','administrateur') NOT NULL DEFAULT 'client',
+  actif BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE categories (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nom VARCHAR(100) UNIQUE NOT NULL,
+  description TEXT
+) ENGINE=InnoDB;
+
+CREATE TABLE ouvrages (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  titre VARCHAR(255) NOT NULL,
+  auteur VARCHAR(255) NOT NULL,
+  isbn VARCHAR(100) UNIQUE NOT NULL,
+  description TEXT,
+  prix DECIMAL(10,2) NOT NULL,
+  stock INT NOT NULL DEFAULT 0,
+  image VARCHAR(255),
+  categorie_id INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (categorie_id) REFERENCES categories(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE panier (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  client_id INT NOT NULL,
+  actif BOOLEAN NOT NULL DEFAULT true,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (client_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE panier_items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  panier_id INT NOT NULL,
+  ouvrage_id INT NOT NULL,
+  quantite INT NOT NULL,
+  prix_unitaire DECIMAL(10,2) NOT NULL,
+  FOREIGN KEY (panier_id) REFERENCES panier(id) ON DELETE CASCADE,
+  FOREIGN KEY (ouvrage_id) REFERENCES ouvrages(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE commandes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  client_id INT NOT NULL,
+  total DECIMAL(10,2) NOT NULL,
+  statut ENUM('en_cours','payee','annulee','expediee') NOT NULL DEFAULT 'en_cours',
+  adresse_livraison TEXT,
+  mode_livraison VARCHAR(100),
+  mode_paiement VARCHAR(100),
+  payment_provider_id VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (client_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE commande_items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  commande_id INT NOT NULL,
+  ouvrage_id INT NOT NULL,
+  quantite INT NOT NULL,
+  prix_unitaire DECIMAL(10,2) NOT NULL,
+  FOREIGN KEY (commande_id) REFERENCES commandes(id) ON DELETE CASCADE,
+  FOREIGN KEY (ouvrage_id) REFERENCES ouvrages(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE listes_cadeaux (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nom VARCHAR(255) NOT NULL,
+  proprietaire_id INT NOT NULL,
+  code_partage VARCHAR(255) UNIQUE NOT NULL,
+  date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (proprietaire_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE liste_items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  liste_id INT NOT NULL,
+  ouvrage_id INT NOT NULL,
+  quantite_souhaitee INT NOT NULL,
+  FOREIGN KEY (liste_id) REFERENCES listes_cadeaux(id) ON DELETE CASCADE,
+  FOREIGN KEY (ouvrage_id) REFERENCES ouvrages(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE avis (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  client_id INT NOT NULL,
+  ouvrage_id INT NOT NULL,
+  note INT NOT NULL,
+  commentaire TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_avis (client_id, ouvrage_id),
+  FOREIGN KEY (client_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (ouvrage_id) REFERENCES ouvrages(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE commentaires (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  client_id INT NOT NULL,
+  ouvrage_id INT NOT NULL,
+  contenu TEXT NOT NULL,
+  valide BOOLEAN NOT NULL DEFAULT false,
+  date_soumission TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  date_validation TIMESTAMP NULL,
+  valide_par INT NULL,
+  FOREIGN KEY (client_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (ouvrage_id) REFERENCES ouvrages(id) ON DELETE CASCADE,
+  FOREIGN KEY (valide_par) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE payments (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  commande_id INT NOT NULL,
+  provider VARCHAR(100),
+  provider_payment_id VARCHAR(255),
+  statut VARCHAR(100),
+  amount DECIMAL(10,2),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (commande_id) REFERENCES commandes(id) ON DELETE CASCADE
+) ENGINE=InnoDB;

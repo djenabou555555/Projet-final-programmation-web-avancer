@@ -1,0 +1,67 @@
+/* ─── Livre Gourmand Design System ─── */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap');
+
+:root {
+  /* Brand colors from maquette */
+  --lg-green:       #2C5F2E;
+  --lg-green-light: #3d7a40;
+  --lg-green-dark:  #1e4220;
+  --lg-cream:       #F5F0E8;
+  --lg-cream-dark:  #EDE7D9;
+  --lg-navy:        #1A2332;
+  --lg-text:        #2D2D2D;
+  --lg-text-muted:  #6B6B6B;
+  --lg-border:      #DDD5C8;
+  --lg-white:       #FFFFFF;
+
+  /* Typography */
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body:    'Lato', Helvetica, sans-serif;
+
+  /* Spacing */
+  --section-gap: 4rem;
+  --card-radius: 8px;
+  --btn-radius:  6px;
+}
+
+/* ─── Global resets ─── */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: var(--font-body);
+  color: var(--lg-text);
+  background: var(--lg-white);
+  margin: 0;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: var(--font-display);
+}
+
+/* ─── Bootstrap overrides ─── */
+.btn-primary {
+  background-color: var(--lg-green) !important;
+  border-color: var(--lg-green) !important;
+  border-radius: var(--btn-radius) !important;
+  font-family: var(--font-body);
+  font-weight: 700;
+}
+.btn-primary:hover {
+  background-color: var(--lg-green-light) !important;
+  border-color: var(--lg-green-light) !important;
+}
+.btn-outline-primary {
+  color: var(--lg-green) !important;
+  border-color: var(--lg-green) !important;
+  border-radius: var(--btn-radius) !important;
+}
+.btn-outline-primary:hover {
+  background-color: var(--lg-green) !important;
+  color: var(--lg-white) !important;
+}
+.btn-outline-dark {
+  border-radius: var(--btn-radius) !important;
+}
+
+a { color: var(--lg-green); text-decoration: none; }
+a:hover { color: var(--lg-green-light); }
